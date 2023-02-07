@@ -1,5 +1,6 @@
 let daneOKliencie;
 const daneOKlientach = JSON.parse(localStorage.getItem('klienci'));
+console.log(daneOKlientach);
 
 function onLoad() {
   const idKonta = parseInt(window.location.search.split('?idkonta=')[1]);
@@ -17,26 +18,32 @@ function onLoad() {
 
 
 function przelew() {
-  const kwotaPrzelewu = document.getElementById('przelew_kwota').value;
+  const kwotaPrzelewu = parseFloat(document.getElementById('przelew_kwota').value);
   const numerKonta = document.getElementById('przelew_numer_konta').value;
+  console.log(typeof kwotaPrzelewu);
+  console.log(typeof daneOKliencie.saldo);
 
-  if(kwotaPrzelewu >= daneOKliencie.saldo) {
+  if(kwotaPrzelewu > daneOKliencie.saldo) {
     alert('Nie masz wystarczającej kwoty!');
     return;
   }
 
+  if(numerKonta === daneOKliencie.nrKonta) {
+    alert('Nie możesz wykonać przelewu do siebie!');
+    return;
+  } 
+
   const odbiorcaPrzelewu = daneOKlientach.find((klient) => {
     return klient.nrKonta == numerKonta
   })
-
+  
   if(odbiorcaPrzelewu === undefined ) {
     alert('Nie ma takiego odbiorcy!');
     return;
   }
-  console.log(daneOKlientach);
-  console.log(daneOKlientach[daneOKliencie.id]);
-  daneOKlientach[daneOKliencie.id].saldo = daneOKlientach[daneOKliencie.id].saldo - kwotaPrzelewu;
-  daneOKlientach[odbiorcaPrzelewu.id].saldo = parseFloat(parseFloat(daneOKlientach[odbiorcaPrzelewu.id].saldo) + parseFloat(kwotaPrzelewu)).toFixed(2);
+  
+  daneOKlientach[daneOKliencie.id-1].saldo = (parseFloat(daneOKlientach[daneOKliencie.id-1].saldo) - kwotaPrzelewu).toFixed(2);
+  daneOKlientach[odbiorcaPrzelewu.id-1].saldo = (parseFloat(daneOKlientach[odbiorcaPrzelewu.id-1].saldo) + kwotaPrzelewu).toFixed(2);
 
   localStorage.setItem('klienci', JSON.stringify(daneOKlientach));
   alert('Przelew wykonany')
